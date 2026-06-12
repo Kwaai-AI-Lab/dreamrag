@@ -1,5 +1,7 @@
 # Dream RAG Research Project
 
+A generalized model of dreaming in a RAG-based system.
+
 ## Authors
 
 - Christopher J. Mayfield
