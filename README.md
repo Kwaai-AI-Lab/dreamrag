@@ -39,12 +39,49 @@ The core kwaai-rag pipeline has been brought into this repo in both **Rust** (re
 
 The Rust `graph` module already includes hooks and data structures intended for the dream loop (e.g. `evidence` chunk tracking, cross-link discovery via `all_chunk_entity_pairs`, schema.org type completion). These are not yet wired into a standalone dream task runner in this repo.
 
-### Not yet started
+## TODO
 
-- Dream loop implementation (cross-link discovery, relation completion, graph refinement during idle time)
-- Retrieval and query interface
-- Integration tests and example scripts
-- Package manifests (`Cargo.toml`, `requirements.txt`) and project wiring
+### 1. Project wiring (run end-to-end)
+
+- [ ] Add `Cargo.toml` and crate layout so the Rust modules compile
+- [ ] Add `requirements.txt` or `pyproject.toml` with pinned Python dependencies
+- [ ] Add a minimal CLI or entry point to ingest a document
+- [ ] Add `scripts/gliner_server.py` (referenced by `gliner.rs` / `gliner.py` but not yet in this repo)
+- [ ] Wire up a concrete vector store for chunk embeddings (ingestion currently takes an `upload_fn` callback with no default backend)
+
+### 2. Dream loop (core research goal)
+
+- [ ] Implement a dream task runner that operates during idle time
+- [ ] Cross-link discovery — find entities shared across documents/chunks via `all_chunk_entity_pairs()`
+- [ ] Relation completion — infer missing relations from graph structure and evidence chunks
+- [ ] Entity schema completion — fill schema.org fields (`birthDate`, `addressLocality`, etc.) for low-confidence entities
+- [ ] Post-dream graph refinement — dedup merges, relation sanitization, confidence rescoring
+
+### 3. Retrieval and query layer
+
+- [ ] Chunk vector search over embedded chunks
+- [ ] Hybrid retrieval combining vector search with graph neighbors (`bfs_neighbors`, `entity_chunks`)
+- [ ] Query interface that ties retrieval + graph context together for generation
+
+### 4. Python/Rust parity (`graph.py`)
+
+`graph.rs` is ~4,700 lines; `graph.py` is ~860. The Python port covers basic ingestion but is missing most graph maintenance logic:
+
+- [ ] `search_entities` — entity retrieval by embedding
+- [ ] `bfs_neighbors`, `entity_chunks` — graph traversal for RAG
+- [ ] `find_dedup_candidates*` — entity deduplication (exact, fuzzy, name-structure, etc.)
+- [ ] `merge_entity_into`, `unmerge_alias` — canonical entity merging
+- [ ] `sanitize_relations` — clean up bad or inferred relations
+- [ ] `coref_candidates_for_chunk` — coreference resolution
+- [ ] `all_chunk_entity_pairs` — cross-link discovery for the dream loop
+- [ ] `set_schema_type`, `set_document_titles` — dream completion helpers
+
+### 5. Tests and examples
+
+- [ ] Unit and integration tests for core modules
+- [ ] Example script: ingest a document and build a knowledge graph
+- [ ] Sample doc schemas (YAML) to exercise `doc_schema`
+- [ ] CI pipeline
 
 ## Repository layout
 
