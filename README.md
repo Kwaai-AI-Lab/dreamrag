@@ -2,6 +2,8 @@
 
 A generalized model of dreaming in a RAG-based system. The project builds on the [kwaai-rag](https://github.com/kwaai/kwaai-rag) ingestion and knowledge-graph stack, with the goal of adding a "dream loop" that discovers cross-document links, completes entity schemas, and refines the graph during idle time.
 
+**Implementation language:** Python. The `.rs` files in this repo are reference ports from kwaai-rag and are not part of the active development path.
+
 ## Authors
 
 - Christopher J. Mayfield
@@ -11,25 +13,29 @@ A generalized model of dreaming in a RAG-based system. The project builds on the
 - Aman Avinash
 - Maira Khwaja
 
+## Publication
+
+Paper in progress: *[How'd you sleep, bro? A Dreaming Retrieval-Augmented Generation Architecture Through the Lens of the Free Energy Principle](https://www.overleaf.com/read/gcrxgjcxqzqc#2e6eb7)* (Overleaf)
+
 ## Progress
 
 ### Done
 
-The core kwaai-rag pipeline has been brought into this repo in both **Rust** (reference implementation) and **Python** (research/prototyping ports). Each Python module mirrors its Rust counterpart.
+The core kwaai-rag pipeline has been ported to Python. Each module lives in a top-level `.py` file.
 
 | Module | Description |
 |--------|-------------|
-| `document` | Extract plain text from `.txt`, `.md`, `.pdf`, `.docx`, `.doc`, and other common formats |
-| `chunker` | Text chunking — character-level sliding window and paragraph-semantic strategies |
-| `doc_schema` | Document schema definitions, section matching, and auto-detection (YAML-driven) |
-| `embedder` | Async HTTP client for the Ollama embedding API (`nomic-embed-text`, 768-dim) |
-| `meta_store` | Per-tenant chunk metadata and file-sync tracking (SQLite) |
-| `ner` | Lightweight proper-noun pre-screening and pronoun resolution (no external NLP deps) |
-| `gliner` | Thin async client for a GLiNER NER server — injects high-confidence person spans into extraction prompts |
-| `graph` | Knowledge graph with entity nodes, directed relations, LLM-based extraction, and SQLite persistence |
-| `ingestion` | End-to-end pipeline: chunk → embed → upload, with optional knowledge-graph extraction |
+| `document.py` | Extract plain text from `.txt`, `.md`, `.pdf`, `.docx`, `.doc`, and other common formats |
+| `chunker.py` | Text chunking — character-level sliding window and paragraph-semantic strategies |
+| `doc_schema.py` | Document schema definitions, section matching, and auto-detection (YAML-driven) |
+| `embedder.py` | Async HTTP client for the Ollama embedding API (`nomic-embed-text`, 768-dim) |
+| `meta_store.py` | Per-tenant chunk metadata and file-sync tracking (SQLite) |
+| `ner.py` | Lightweight proper-noun pre-screening and pronoun resolution (no external NLP deps) |
+| `gliner.py` | Thin async client for a GLiNER NER server — injects high-confidence person spans into extraction prompts |
+| `graph.py` | Knowledge graph with entity nodes, directed relations, LLM-based extraction, and SQLite persistence |
+| `ingestion.py` | End-to-end pipeline: chunk → embed → upload, with optional knowledge-graph extraction |
 
-**Ingestion pipeline** (from `ingestion`):
+**Ingestion pipeline** (`ingestion.py`):
 
 1. Extract text from a document
 2. Split into chunks (configurable strategy, overlap, and surrounding context)
@@ -37,22 +43,22 @@ The core kwaai-rag pipeline has been brought into this repo in both **Rust** (re
 4. Store chunk metadata in `meta_store`
 5. Optionally extract entities and relations into the knowledge graph (LLM + GLiNER + NER hints)
 
-The Rust `graph` module already includes hooks and data structures intended for the dream loop (e.g. `evidence` chunk tracking, cross-link discovery via `all_chunk_entity_pairs`, schema.org type completion). These are not yet wired into a standalone dream task runner in this repo.
+`graph.py` currently covers basic ingestion and extraction. The kwaai-rag reference (`graph.rs`) includes additional graph maintenance and dream-loop hooks that still need to be ported.
 
 ## TODO
 
 ### 1. Project wiring (run end-to-end)
 
-- [ ] Add `Cargo.toml` and crate layout so the Rust modules compile
-- [ ] Add `requirements.txt` or `pyproject.toml` with pinned Python dependencies
-- [ ] Add a minimal CLI or entry point to ingest a document
-- [ ] Add `scripts/gliner_server.py` (referenced by `gliner.rs` / `gliner.py` but not yet in this repo)
+- [ ] Add `requirements.txt` or `pyproject.toml` with pinned dependencies
+- [ ] Add a minimal CLI or entry point to ingest a document (`python -m dreamrag ingest …`)
+- [ ] Add `scripts/gliner_server.py` (referenced by `gliner.py` but not yet in this repo)
 - [ ] Wire up a concrete vector store for chunk embeddings (ingestion currently takes an `upload_fn` callback with no default backend)
+- [ ] Organize modules into a proper Python package (e.g. `dreamrag/`)
 
 ### 2. Dream loop (core research goal)
 
-- [ ] Implement a dream task runner that operates during idle time
-- [ ] Cross-link discovery — find entities shared across documents/chunks via `all_chunk_entity_pairs()`
+- [ ] Implement `dream.py` — a background task runner that operates during idle time
+- [ ] Cross-link discovery — find entities shared across documents/chunks via `GraphStore.all_chunk_entity_pairs()`
 - [ ] Relation completion — infer missing relations from graph structure and evidence chunks
 - [ ] Entity schema completion — fill schema.org fields (`birthDate`, `addressLocality`, etc.) for low-confidence entities
 - [ ] Post-dream graph refinement — dedup merges, relation sanitization, confidence rescoring
@@ -60,12 +66,12 @@ The Rust `graph` module already includes hooks and data structures intended for 
 ### 3. Retrieval and query layer
 
 - [ ] Chunk vector search over embedded chunks
-- [ ] Hybrid retrieval combining vector search with graph neighbors (`bfs_neighbors`, `entity_chunks`)
-- [ ] Query interface that ties retrieval + graph context together for generation
+- [ ] Hybrid retrieval combining vector search with graph neighbors
+- [ ] Query interface (`query.py`?) that ties retrieval + graph context together for generation
 
-### 4. Python/Rust parity (`graph.py`)
+### 4. Complete `graph.py`
 
-`graph.rs` is ~4,700 lines; `graph.py` is ~860. The Python port covers basic ingestion but is missing most graph maintenance logic:
+`graph.py` covers basic ingestion but is missing most graph maintenance logic from the kwaai-rag reference. Port the following into Python:
 
 - [ ] `search_entities` — entity retrieval by embedding
 - [ ] `bfs_neighbors`, `entity_chunks` — graph traversal for RAG
@@ -78,29 +84,29 @@ The Rust `graph` module already includes hooks and data structures intended for 
 
 ### 5. Tests and examples
 
-- [ ] Unit and integration tests for core modules
+- [ ] Unit and integration tests for core modules (`pytest`)
 - [ ] Example script: ingest a document and build a knowledge graph
 - [ ] Sample doc schemas (YAML) to exercise `doc_schema`
-- [ ] CI pipeline
+- [ ] CI pipeline (GitHub Actions)
 
 ## Repository layout
 
 ```
-document.{rs,py}     # Text extraction
-chunker.{rs,py}      # Chunking strategies
-doc_schema.{rs,py}  # Section schemas
-embedder.{rs,py}     # Ollama embeddings
-meta_store.{rs,py}  # Chunk/sync metadata
-ner.{rs,py}          # Proper-noun & pronoun handling
-gliner.{rs,py}       # GLiNER NER client
-graph.{rs,py}        # Knowledge graph store & extraction
-ingestion.{rs,py}   # Full ingestion pipeline
+document.py       # Text extraction
+chunker.py        # Chunking strategies
+doc_schema.py     # Section schemas
+embedder.py       # Ollama embeddings
+meta_store.py     # Chunk/sync metadata
+ner.py            # Proper-noun & pronoun handling
+gliner.py         # GLiNER NER client
+graph.py          # Knowledge graph store & extraction
+ingestion.py      # Full ingestion pipeline
+
+*.rs              # kwaai-rag reference (not actively maintained)
 ```
 
-## Dependencies (by module)
+## Dependencies
 
-**Python** — `aiohttp` (embedder, graph, gliner, ingestion), `pdfminer.six` (PDF extraction), `pyyaml` (doc schemas).
-
-**Rust** — modules are self-contained source files ported from kwaai-rag; a `Cargo.toml` has not been added yet.
+**Python packages** — `aiohttp` (embedder, graph, gliner, ingestion), `pdfminer.six` (PDF extraction), `pyyaml` (doc schemas).
 
 **External services** — Ollama (embeddings), an LLM inference endpoint (graph extraction), and optionally a GLiNER NER server.
