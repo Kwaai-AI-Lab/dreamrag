@@ -143,6 +143,9 @@ def entity_id(name: str, entity_type: str) -> int:
 
 # ── Schema field registry ─────────────────────────────────────────────────────
 
+#this is going to change a lot, generalized each document type will have its unique schema and unique fields
+
+
 _EXPECTED_FIELDS: dict[str, list[tuple[str, str]]] = {
     "Person": [
         ("birthDate", "date of birth"),
