@@ -93,6 +93,7 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 ### 6. Dreaming 
 - [ ] Assess how to optimize for dreaming, such as graph completion and storage compression
 - [ ] Gather more information on the neuroscience
+- [ ] Metrics
 
 
 ## Repository layout
