@@ -2,7 +2,7 @@
 
 A generalized model of dreaming in a RAG-based system. The project builds on the [kwaai-rag](https://github.com/kwaai/kwaai-rag) ingestion and knowledge-graph stack, with the goal of adding a "dream loop" that discovers cross-document links, completes entity schemas, and refines the graph during idle time.
 
-**Implementation language:** Python. The `.rs` files in this repo are reference ports from kwaai-rag and are not part of the active development path.
+**Implementation language:** Python. The `rust implementations/` directory contains reference ports from kwaai-rag and is not part of the active development path.
 
 ## Authors
 
@@ -43,7 +43,7 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 4. Store chunk metadata in `meta_store`
 5. Optionally extract entities and relations into the knowledge graph (LLM + GLiNER + NER hints)
 
-`graph.py` currently covers basic ingestion and extraction. The kwaai-rag reference (`graph.rs`) includes additional graph maintenance and dream-loop hooks that still need to be ported.
+`graph.py` currently covers basic ingestion and extraction. The kwaai-rag reference (`rust implementations/graph.rs`) includes additional graph maintenance and dream-loop hooks that still need to be ported.
 
 ## TODO
 
@@ -102,7 +102,8 @@ gliner.py         # GLiNER NER client
 graph.py          # Knowledge graph store & extraction
 ingestion.py      # Full ingestion pipeline
 
-*.rs              # kwaai-rag reference (not actively maintained)
+rust implementations/   # kwaai-rag reference (not actively maintained)
+  *.rs
 ```
 
 ## Dependencies
