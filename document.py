@@ -8,6 +8,8 @@ Supported formats:
   - .doc  — extracted via antiword or libreoffice --headless (must be installed)
 """
 
+_OOXML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
 from __future__ import annotations
 
 import re
@@ -103,7 +105,7 @@ def _clean_pdf_text(text: str) -> str:
 
 # ── DOCX ──────────────────────────────────────────────────────────────────────
 
-_OOXML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
 
 
 def _extract_docx(path: Path) -> str:

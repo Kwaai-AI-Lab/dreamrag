@@ -150,7 +150,7 @@ def _split_paragraph(
 
     packed = _pack_chunks_with_meta(content_units, cfg)
     surr_half = cfg.chunk_size // 4
-    chunk_texts = [t for t, *_ in packed]
+    chunk_texts = [t for t, *_ in packed] #Comprehension 
 
     result = []
     index = 0
