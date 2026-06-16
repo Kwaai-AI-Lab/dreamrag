@@ -45,15 +45,58 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 
 `graph.py` currently covers basic ingestion and extraction. The kwaai-rag reference (`rust implementations/graph.rs`) includes additional graph maintenance and dream-loop hooks that still need to be ported.
 
+## Quick start
+
+### 1. Install dependencies
+
+```bash
+cd dreamrag
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Start Ollama and pull the embedding model
+
+```bash
+ollama pull nomic-embed-text
+python -m dreamrag check
+```
+
+### 3. Add documents
+
+Place files in `data/documents/` (`.txt`, `.md`, `.pdf`, `.docx`, etc.) or pass paths directly.
+
+### 4. Ingest
+
+```bash
+# Chunk + embed + store metadata and vectors
+python -m dreamrag ingest
+
+# Also extract a knowledge graph (slower; uses your Ollama LLM)
+python -m dreamrag ingest --graph --llm-model llama3.1:8b
+
+# Ingest specific files
+python -m dreamrag ingest path/to/file.pdf another.md
+```
+
+### 5. Check status
+
+```bash
+python -m dreamrag status
+```
+
+Ingested data is stored under `data/store/` (chunk metadata, vectors, and optional knowledge graph).
+
 ## TODO
 
 ### 1. Project wiring (run end-to-end)
 
-- [ ] Add `requirements.txt` or `pyproject.toml` with pinned dependencies
-- [ ] Add a minimal CLI or entry point to ingest a document (`python -m dreamrag ingest …`)
+- [x] Add `requirements.txt` with pinned dependencies
+- [x] Add a minimal CLI (`python -m dreamrag ingest`)
 - [ ] Add `scripts/gliner_server.py` (referenced by `gliner.py` but not yet in this repo)
-- [ ] Wire up a concrete vector store for chunk embeddings (ingestion currently takes an `upload_fn` callback with no default backend)
-- [ ] Organize modules into a proper Python package (e.g. `dreamrag/`)
+- [x] Wire up a concrete vector store for chunk embeddings (`vector_store.py`)
+- [ ] Organize modules into a proper Python package (e.g. move top-level modules into `dreamrag/`)
 
 ### 2. Dream loop (core research goal)
 
@@ -85,7 +128,7 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 ### 5. Tests and examples
 
 - [ ] Unit and integration tests for core modules (`pytest`)
-- [ ] Example script: ingest a document and build a knowledge graph
+- [x] Example document in `data/documents/sample.txt`
 - [ ] Sample doc schemas (YAML) to exercise `doc_schema`
 - [ ] CI pipeline (GitHub Actions)
 
@@ -104,10 +147,14 @@ chunker.py        # Chunking strategies
 doc_schema.py     # Section schemas
 embedder.py       # Ollama embeddings
 meta_store.py     # Chunk/sync metadata
+vector_store.py   # Chunk embedding storage
 ner.py            # Proper-noun & pronoun handling
 gliner.py         # GLiNER NER client
 graph.py          # Knowledge graph store & extraction
 ingestion.py      # Full ingestion pipeline
+dreamrag/         # CLI (`python -m dreamrag`)
+data/documents/   # Drop files here for ingestion
+data/store/       # Generated databases (gitignored)
 
 rust implementations/   # kwaai-rag reference (not actively maintained)
   *.rs

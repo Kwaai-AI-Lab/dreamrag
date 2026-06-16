@@ -1,0 +1,12 @@
+# Local data (ingested chunks, vectors, graph)
+data/store/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# OS
+.DS_Store

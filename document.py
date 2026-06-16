@@ -8,9 +8,9 @@ Supported formats:
   - .doc  — extracted via antiword or libreoffice --headless (must be installed)
 """
 
-_OOXML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-
 from __future__ import annotations
+
+_OOXML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
 import re
 import subprocess

@@ -1,0 +1,5 @@
+Alice met Bob in Paris. They discussed retrieval-augmented generation and how a knowledge graph could help connect ideas across documents.
+
+Bob works at a research lab focused on machine learning. Alice visited the lab last spring to collaborate on a dreaming architecture inspired by predictive processing.
+
+Paris has long been a meeting place for scientists and writers. Their conversation touched on memory consolidation during sleep and whether an AI system could perform analogous offline refinement.
