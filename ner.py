@@ -232,7 +232,7 @@ def resolve_pronouns_from_candidates(
         matched = next(
             (
                 name for name, _, g in reversed(candidates)
-                if (g == gender or gender == "Neutral") if g is not None else gender == "Neutral"
+                if ((g == gender or gender == "Neutral") if g is not None else gender == "Neutral")
             ),
             None,
         )
