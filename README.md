@@ -165,3 +165,8 @@ rust implementations/   # kwaai-rag reference (not actively maintained)
 **Python packages** — `aiohttp` (embedder, graph, gliner, ingestion), `pdfminer.six` (PDF extraction), `pyyaml` (doc schemas).
 
 **External services** — Ollama (embeddings), an LLM inference endpoint (graph extraction), and optionally a GLiNER NER server.
+
+
+## Ideas 
+ -evaluate recall and not just pulled context 
+ 
