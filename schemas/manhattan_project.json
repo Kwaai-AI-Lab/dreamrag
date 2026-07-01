@@ -1,0 +1,41 @@
+{
+  "name": "manhattan_project",
+  "description": "Historical documents on the Manhattan Project and the first atomic bomb.",
+  "entity_types": [
+    "Person",
+    "Organization",
+    "Location",
+    "Event",
+    "Date",
+    "Concept",
+    "Technology",
+    "Method",
+    "Document",
+    "Role",
+    "Quantity"
+  ],
+  "relation_types": [
+    "works_at",
+    "led",
+    "managed",
+    "member_of",
+    "founded",
+    "lived_in",
+    "visited",
+    "located_in",
+    "part_of",
+    "contains",
+    "occurred_on",
+    "started",
+    "ended",
+    "followed_by",
+    "precedes",
+    "built",
+    "implements",
+    "described_in",
+    "cites",
+    "associated_with",
+    "related_to"
+  ],
+  "domain_notes": "Mid-1940s wartime nuclear research. Prioritize scientists, military leaders, laboratories, test sites, dates of key events (e.g. the Trinity test on 16 July 1945), and organizational chains of command."
+}

@@ -34,6 +34,9 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 | `gliner.py` | Thin async client for a GLiNER NER server — injects high-confidence person spans into extraction prompts |
 | `graph.py` | Knowledge graph with entity nodes, directed relations, LLM-based extraction, and SQLite persistence |
 | `ingestion.py` | End-to-end pipeline: chunk → embed → upload, with optional knowledge-graph extraction |
+| `corpus_schema.py` | Per-corpus entity/relation schema config (feeds the graph extraction types); sample in `schemas/` |
+| `memory.py` | Memory-strength model: reinforcement + recency under a dynamically-modulated Ebbinghaus forgetting curve |
+| `dream.py` | Dreaming consolidation loop — recomputes memory strengths, demotes weak chunks, synthesizes core facts |
 
 **Ingestion pipeline** (`ingestion.py`):
 
@@ -43,7 +46,15 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 4. Store chunk metadata in `meta_store`
 5. Optionally extract entities and relations into the knowledge graph (LLM + GLiNER + NER hints)
 
-`graph.py` currently covers basic ingestion and extraction. The kwaai-rag reference (`rust implementations/graph.rs`) includes additional graph maintenance and dream-loop hooks that still need to be ported.
+`graph.py` currently covers basic ingestion and extraction. The kwaai-rag reference (`rust implementations/graph.rs`) includes additional graph maintenance hooks that still need to be ported.
+
+**Memory & dreaming** (`memory.py`, `dream.py`): every entity, relation, and chunk gets a *strength* combining how often it was reinforced (mention/evidence count) and how recently it was seen, decayed via an Ebbinghaus curve whose stability grows with reinforcement (the spacing effect). The dreaming loop reclassifies memory into `long_term` / `short_term` / `dormant`, demotes (never deletes) weak chunks, and optionally synthesizes consolidated "core facts" from the strongest entities. State is written to new tables (`memory_nodes`, `memory_edges`, `memory_chunks`, `consolidated_facts`) so ingestion is untouched. The query/structure/eval layers live in the sibling [`dreamrag-retrieval`](../dreamrag-retrieval) project.
+
+```bash
+python3 dream.py run                 # recompute strengths + consolidate
+python3 dream.py run --synthesize    # also LLM-synthesize core facts
+python3 dream.py show nodes          # strongest memories
+```
 
 ## Quick start
 
@@ -100,7 +111,9 @@ Ingested data is stored under `data/store/` (chunk metadata, vectors, and option
 
 ### 2. Dream loop (core research goal)
 
-- [ ] Implement `dream.py` — a background task runner that operates during idle time
+- [x] Implement `dream.py` — a consolidation runner operating over the graph during idle time
+- [x] Memory-strength model (`memory.py`) — reinforcement + recency + Ebbinghaus forgetting
+- [x] Consolidation — demote weak chunks to short-term/dormant, synthesize core facts from strong entities
 - [ ] Cross-link discovery — find entities shared across documents/chunks via `GraphStore.all_chunk_entity_pairs()`
 - [ ] Relation completion — infer missing relations from graph structure and evidence chunks
 - [ ] Entity schema completion — fill schema.org fields (`birthDate`, `addressLocality`, etc.) for low-confidence entities
@@ -108,9 +121,13 @@ Ingested data is stored under `data/store/` (chunk metadata, vectors, and option
 
 ### 3. Retrieval and query layer
 
-- [ ] Chunk vector search over embedded chunks
-- [ ] Hybrid retrieval combining vector search with graph neighbors
-- [ ] Query interface (`query.py`?) that ties retrieval + graph context together for generation
+Implemented in the sibling [`dreamrag-retrieval`](../dreamrag-retrieval) project:
+
+- [x] Chunk vector search over embedded chunks
+- [x] Hybrid retrieval combining vector search with graph neighbors
+- [x] Structural router + query-likelihood reranking + cited answer generation (`ask`)
+- [x] Structural understanding (clustering, summaries, timeline, relationship map)
+- [x] Evaluation harness and pillar ablation study
 
 ### 4. Complete `graph.py`
 
@@ -152,6 +169,10 @@ ner.py            # Proper-noun & pronoun handling
 gliner.py         # GLiNER NER client
 graph.py          # Knowledge graph store & extraction
 ingestion.py      # Full ingestion pipeline
+corpus_schema.py  # Per-corpus entity/relation schema config
+memory.py         # Memory-strength model (reinforcement + recency + Ebbinghaus)
+dream.py          # Dreaming consolidation loop (`python3 dream.py run`)
+schemas/          # Sample per-corpus schemas (e.g. manhattan_project.json)
 dreamrag/         # CLI (`python -m dreamrag`)
 data/documents/   # Drop files here for ingestion
 data/store/       # Generated databases (gitignored)
