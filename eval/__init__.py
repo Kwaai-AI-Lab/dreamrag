@@ -6,6 +6,7 @@ This package contains evaluation utilities used to assess:
 1. Retrieval Effectiveness
 2. Retrieval Grounding
 3. Graph Refinement Quality
+4. Retrieval Rankers
 
 Current Retrieval Effectiveness Metrics:
     - Recall@K
@@ -23,8 +24,14 @@ Current Graph Refinement Metrics:
     - Compression Delta
     - Deduplication Delta
 
-Future evaluation modules may include:
+Curent Retrieval Rankers:
+    - BM25 Retriever
+    - Reciprocal Rank Fusion (RRF)
+    - Linear Learning-to-Rank (LTR) Ranker
+    - Maximal Marginal Relevance (MMR)
+    - Cross-Encoder Reranker
 
+Future evaluation modules may include:
     - Trustworthiness Evaluation
     - Security Evaluation
     - Alignment & Safety Evaluation
@@ -80,6 +87,19 @@ from .ragas_runner import (
 )
 
 # ---------------------------------------------------------------------
+# Retrieval Rankers
+# ---------------------------------------------------------------------
+
+from .retrieval_rankers import (
+    RankedDocument,
+    BM25Retriever,
+    reciprocal_rank_fusion,
+    LinearLTRRanker,
+    maximal_marginal_relevance,
+    CrossEncoderReranker,
+)
+
+# ---------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------
 
@@ -106,4 +126,12 @@ __all__ = [
     "ragas_metric_names",
     "run_ragas_evaluation",
     "available_ragas_metrics",
+
+    # Retrieval Rankers
+    "RankedDocument",
+    "BM25Retriever",
+    "reciprocal_rank_fusion",
+    "LinearLTRRanker",
+    "maximal_marginal_relevance",
+    "CrossEncoderReranker",
 ]
