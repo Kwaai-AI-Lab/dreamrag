@@ -1,0 +1,104 @@
+{
+  "summary": {
+    "total_documents": 224,
+    "total_questions": 280,
+    "total_topics": 15
+  },
+  "metrics": {
+    "recall@1": 0.6464285714285715,
+    "recall@3": 0.7178571428571429,
+    "recall@5": 0.7321428571428571,
+    "recall@10": 0.7535714285714286,
+    "mrr": 0.684141156462585,
+    "ndcg@1": 0.6464285714285715,
+    "ndcg@3": 0.5486038680523568,
+    "ndcg@5": 0.4991154429832197,
+    "ndcg@10": 0.41500621184581993
+  },
+  "topic_metrics": {
+    "Astrophysics - Space Exploration": {
+      "num_questions": 20,
+      "recall@1": 1.0,
+      "recall@5": 1.0,
+      "mrr": 1.0
+    },
+    "Climate Science": {
+      "num_questions": 20,
+      "recall@1": 1.0,
+      "recall@5": 1.0,
+      "mrr": 1.0
+    },
+    "Country History-Culture  (India-focused)": {
+      "num_questions": 20,
+      "recall@1": 0.0,
+      "recall@5": 0.0,
+      "mrr": 0.0
+    },
+    "Deep Sea Biology": {
+      "num_questions": 20,
+      "recall@1": 0.9,
+      "recall@5": 0.95,
+      "mrr": 0.9333333333333333
+    },
+    "Dream-Based Memory Consolidation and Forgetting": {
+      "num_questions": 20,
+      "recall@1": 0.75,
+      "recall@5": 0.9,
+      "mrr": 0.83125
+    },
+    "Internet Standard  RFCs ": {
+      "num_questions": 20,
+      "recall@1": 0.0,
+      "recall@5": 0.0,
+      "mrr": 0.0
+    },
+    "Legal Documents": {
+      "num_questions": 20,
+      "recall@1": 1.0,
+      "recall@5": 1.0,
+      "mrr": 1.0
+    },
+    "Manhattan Project": {
+      "num_questions": 20,
+      "recall@1": 0.85,
+      "recall@5": 0.95,
+      "mrr": 0.9
+    },
+    "Moby-Dick and companion works": {
+      "num_questions": 20,
+      "recall@1": 0.35,
+      "recall@5": 0.6,
+      "mrr": 0.4445833333333334
+    },
+    "NIST AI Security   Governance": {
+      "num_questions": 20,
+      "recall@1": 0.0,
+      "recall@5": 0.0,
+      "mrr": 0.0
+    },
+    "OpenStreetMap Data Documentation": {
+      "num_questions": 20,
+      "recall@1": 0.9,
+      "recall@5": 1.0,
+      "mrr": 0.9349999999999999
+    },
+    "Poems": {
+      "num_questions": 20,
+      "recall@1": 0.85,
+      "recall@5": 0.95,
+      "mrr": 0.885
+    },
+    "Python Documentation": {
+      "num_questions": 20,
+      "recall@1": 0.75,
+      "recall@5": 0.9,
+      "mrr": 0.8238095238095238
+    },
+    "War and Peace": {
+      "num_questions": 20,
+      "recall@1": 0.7,
+      "recall@5": 1.0,
+      "mrr": 0.825
+    }
+  }
+}
