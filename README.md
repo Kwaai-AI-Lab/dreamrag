@@ -58,7 +58,8 @@ The core kwaai-rag pipeline has been ported to Python. Each module lives in a to
 python3 dream.py run                 # recompute strengths + consolidate
 python3 dream.py run --synthesize    # also LLM-synthesize core facts
 python3 dream.py show nodes          # strongest memories
-python3 simulate_forgetting.py       # plot retention decay over time on a graph DB
+python -m dreamrag forget            # Ebbinghaus retention decay on a graph DB
+python -m dreamrag eval              # local BM25 / hybrid / graph eval
 ```
 
 ### Recent work (graph retrieval + forgetting)
@@ -86,11 +87,13 @@ On the Corpus Final Review benchmark (~224 docs, 280 queries):
 # Rebuild cleaned entity graph
 .venv/bin/python build_improved_graph.py --gliner-url http://127.0.0.1:8000
 
-# Evaluate BM25 / hybrid / graph
-.venv/bin/python run_final_evaluation.py
+# Local eval (BM25 / hybrid / graph) — also: python -m dreamrag eval
+python -m dreamrag eval
+# or: .venv/bin/python run_final_evaluation.py
 
-# Simulate forgetting over 365 days
-.venv/bin/python simulate_forgetting.py
+# Forgetting simulation — also: python -m dreamrag forget
+python -m dreamrag forget
+# or: .venv/bin/python simulate_forgetting.py
 ```
 
 ## Quick start

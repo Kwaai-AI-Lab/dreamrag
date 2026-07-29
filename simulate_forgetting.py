@@ -79,7 +79,7 @@ def simulate(
             classic[r].append(round(strength(r, float(d), params), 4))
 
     milestones = []
-    for d in (0, 7, 30, 90, 180, max_days):
+    for d in sorted({0, 7, 30, 90, 180, max_days}):
         if d not in days:
             continue
         i = days.index(d)
@@ -143,42 +143,33 @@ def simulate(
     }
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Simulate Ebbinghaus forgetting on a graph")
-    parser.add_argument(
-        "--graph-db",
-        default="./data/store/corpus_graph_improved.db",
-        help="Path to graph SQLite DB",
-    )
-    parser.add_argument(
-        "--out",
-        default="./data/forgetting_simulation.json",
-        help="Output JSON path",
-    )
-    parser.add_argument("--max-days", type=int, default=365)
-    parser.add_argument("--step", type=int, default=5)
-    parser.add_argument("--base-stability", type=float, default=30.0)
-    parser.add_argument("--boost", type=float, default=1.5)
-    args = parser.parse_args()
-
-    db = Path(args.graph_db)
+def run_simulation(
+    graph_db: Path,
+    out: Path,
+    max_days: int = 365,
+    step: int = 5,
+    base_stability: float = 30.0,
+    boost: float = 1.5,
+) -> int:
+    """Run forgetting simulation and write JSON. Returns process exit code."""
+    db = Path(graph_db)
     if not db.exists():
         print(f"✗ Graph DB not found: {db}")
         return 1
 
     params = MemoryParams(
-        base_stability_days=args.base_stability,
-        boost=args.boost,
+        base_stability_days=base_stability,
+        boost=boost,
     )
     nodes = load_entities(db)
     if not nodes:
         print("✗ No entities in graph")
         return 1
 
-    result = simulate(nodes, params, max_days=args.max_days, step=args.step)
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(result, indent=2))
+    result = simulate(nodes, params, max_days=max_days, step=step)
+    out_path = Path(out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, indent=2))
 
     print("=" * 72)
     print("Ebbinghaus forgetting simulation")
@@ -195,8 +186,36 @@ def main() -> int:
             f"{m['dormant_pct']:8.1f}%"
         )
     print()
-    print(f"✓ Wrote {out}")
+    print(f"✓ Wrote {out_path}")
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Simulate Ebbinghaus forgetting on a graph")
+    parser.add_argument(
+        "--graph-db",
+        default="./data/store/corpus_graph_improved.db",
+        help="Path to graph SQLite DB",
+    )
+    parser.add_argument(
+        "--out",
+        default="./data/forgetting_simulation.json",
+        help="Output JSON path",
+    )
+    parser.add_argument("--max-days", type=int, default=365)
+    parser.add_argument("--step", type=int, default=5)
+    parser.add_argument("--base-stability", type=float, default=30.0)
+    parser.add_argument("--boost", type=float, default=1.5)
+    args = parser.parse_args(argv)
+
+    return run_simulation(
+        graph_db=Path(args.graph_db),
+        out=Path(args.out),
+        max_days=args.max_days,
+        step=args.step,
+        base_stability=args.base_stability,
+        boost=args.boost,
+    )
 
 
 if __name__ == "__main__":

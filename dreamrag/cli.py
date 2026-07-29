@@ -252,7 +252,7 @@ def _cmd_status(args: argparse.Namespace) -> int:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="dreamrag",
-        description="Dream RAG — ingest documents into a local knowledge base",
+        description="Dream RAG — ingest, eval, and forgetting simulation",
     )
     parser.add_argument("-v", "--verbose", action="store_true")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -284,7 +284,81 @@ def _build_parser() -> argparse.ArgumentParser:
     status = sub.add_parser("status", help="Show ingestion status")
     status.add_argument("--data-dir", default=str(DEFAULT_DATA_DIR))
 
+    forget = sub.add_parser(
+        "forget",
+        help="Simulate Ebbinghaus forgetting on a knowledge graph",
+    )
+    forget.add_argument(
+        "--graph-db",
+        default=str(DEFAULT_STORE_DIR / "corpus_graph_improved.db"),
+        help="Path to graph SQLite DB",
+    )
+    forget.add_argument(
+        "--out",
+        default=str(DEFAULT_DATA_DIR / "forgetting_simulation.json"),
+        help="Output JSON path",
+    )
+    forget.add_argument("--max-days", type=int, default=365)
+    forget.add_argument("--step", type=int, default=5)
+    forget.add_argument("--base-stability", type=float, default=30.0)
+    forget.add_argument("--boost", type=float, default=1.5)
+
+    evaluate = sub.add_parser(
+        "eval",
+        help="Local retrieval eval: BM25 vs Simple Hybrid vs Improved Graph",
+    )
+    evaluate.add_argument(
+        "--corpus-path",
+        default="/Users/christophermayfield/Desktop/Corpus_Final_Review",
+        help="Path to Corpus_Final_Review (or compatible corpus)",
+    )
+    evaluate.add_argument(
+        "--graph-db",
+        default=str(DEFAULT_STORE_DIR / "corpus_graph_improved.db"),
+        help="Improved graph SQLite DB",
+    )
+    evaluate.add_argument(
+        "--out",
+        default=str(ROOT / "final_evaluation_results.json"),
+        help="Output JSON path",
+    )
+    evaluate.add_argument(
+        "--gliner-url",
+        default="http://127.0.0.1:8000",
+        help="GLiNER NER server URL",
+    )
+    evaluate.add_argument(
+        "--skip-graph",
+        action="store_true",
+        help="Only run BM25 and Simple Hybrid",
+    )
+
     return parser
+
+
+def _cmd_forget(args: argparse.Namespace) -> int:
+    from simulate_forgetting import run_simulation
+
+    return run_simulation(
+        graph_db=Path(args.graph_db),
+        out=Path(args.out),
+        max_days=args.max_days,
+        step=args.step,
+        base_stability=args.base_stability,
+        boost=args.boost,
+    )
+
+
+def _cmd_eval(args: argparse.Namespace) -> int:
+    from run_final_evaluation import run_evaluation
+
+    return run_evaluation(
+        corpus_path=Path(args.corpus_path),
+        graph_db=Path(args.graph_db),
+        out_path=Path(args.out),
+        gliner_url=args.gliner_url or None,
+        skip_graph=args.skip_graph,
+    )
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -298,6 +372,10 @@ def main(argv: list[str] | None = None) -> None:
         code = asyncio.run(_cmd_ingest(args))
     elif args.command == "status":
         code = _cmd_status(args)
+    elif args.command == "forget":
+        code = _cmd_forget(args)
+    elif args.command == "eval":
+        code = _cmd_eval(args)
     else:
         parser.error(f"unknown command: {args.command}")
         return
