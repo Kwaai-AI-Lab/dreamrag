@@ -239,16 +239,19 @@ def maximal_marginal_relevance(
         best_score = float("-inf")
 
         for doc_id in remaining:
+            if doc_id not in document_embeddings:
+                continue
             doc_embedding = document_embeddings[doc_id]
 
             relevance = cosine_similarity(query_embedding, doc_embedding)
 
             diversity_penalty = 0.0
             if selected:
-                diversity_penalty = max(
-                    cosine_similarity(doc_embedding, document_embeddings[selected_id])
-                    for selected_id in selected
-                )
+                penalties = []
+                for selected_id in selected:
+                    if selected_id in document_embeddings:
+                        penalties.append(cosine_similarity(doc_embedding, document_embeddings[selected_id]))
+                diversity_penalty = max(penalties) if penalties else 0.0
 
             mmr_score = (
                 lambda_mult * relevance
@@ -259,6 +262,8 @@ def maximal_marginal_relevance(
                 best_score = mmr_score
                 best_id = doc_id
 
+        if best_id is None:
+            break
         selected.append(best_id)
         remaining.remove(best_id)
 
@@ -289,11 +294,21 @@ class CrossEncoderReranker:
         documents: Mapping[str, str],
         top_k: int = 10,
     ) -> RetrievalResult:
-        pairs = [(query, documents[doc_id]) for doc_id in candidate_ids]
+        pairs = [
+            (query, documents[doc_id])
+            for doc_id in candidate_ids
+            if doc_id in documents
+        ]
+        if not pairs:
+            return RetrievalResult(query_id=query_id, retrieved_ids=[])
+
         scores = self.model.predict(pairs)
 
+        # Get the doc_ids that had valid embeddings
+        valid_doc_ids = [doc_id for doc_id in candidate_ids if doc_id in documents]
+
         ranked = sorted(
-            zip(candidate_ids, scores),
+            zip(valid_doc_ids, scores),
             key=lambda item: float(item[1]),
             reverse=True,
         )

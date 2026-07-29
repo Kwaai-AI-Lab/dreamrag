@@ -176,7 +176,7 @@ class DreamCycle:
                 if last_seen_str:
                     try:
                         last_seen = datetime.fromisoformat(last_seen_str)
-                    except:
+                    except (ValueError, TypeError):
                         last_seen = now
                 else:
                     last_seen = now
@@ -251,7 +251,8 @@ class DreamCycle:
                 state = node.get('memory_state', DORMANT)
                 if state == DORMANT:
                     dormant_ids.append(entity_id)
-            except:
+            except json.JSONDecodeError as e:
+                print(f"  Warning: Failed to parse entity {entity_id}: {e}")
                 pass
 
         # Delete dormant entities
@@ -281,8 +282,8 @@ class DreamCycle:
             try:
                 node = json.loads(node_json)
                 entities[entity_id] = node
-            except:
-                pass
+            except json.JSONDecodeError as e:
+                print(f"  Warning: Failed to parse entity {entity_id}: {e}")
 
         # Find duplicates by fuzzy name matching
         consolidated = 0
@@ -308,18 +309,38 @@ class DreamCycle:
         return consolidated
 
     def _are_duplicate_names(self, name1: str, name2: str) -> bool:
-        """Check if two names likely refer to same entity."""
+        """Check if two names likely refer to same entity.
+
+        Uses strict matching: exact match or last-name-only match.
+        Avoids false positives from substring matching.
+        """
         # Exact match (after normalization)
         if name1 == name2:
             return True
 
-        # Substring match (e.g., "Leslie Groves" vs "Gen. Groves")
-        if len(name1) > 4 and len(name2) > 4:
-            if name1 in name2 or name2 in name1:
+        # Last-name-only match (e.g., "Leslie Groves" vs "Groves")
+        # Only if one is a single word and matches the last word of the other
+        parts1 = name1.split()
+        parts2 = name2.split()
+
+        if len(parts1) > 1 and len(parts2) == 1:
+            if parts1[-1] == parts2[0]:
+                return True
+        elif len(parts2) > 1 and len(parts1) == 1:
+            if parts2[-1] == parts1[0]:
                 return True
 
-        # Levenshtein distance (simple: > 90% similar)
-        # For now, just use substring matching
+        # Conservative substring match: only if one is significantly contained
+        # e.g., "Leslie Groves" vs "L. Groves" (initials), NOT "John" vs "John Smith"
+        if len(name1) > 10 and len(name2) > 10:
+            # Only match if names share most words (>80% word overlap)
+            words1 = set(parts1)
+            words2 = set(parts2)
+            if words1 and words2:
+                overlap = len(words1 & words2) / max(len(words1), len(words2))
+                if overlap >= 0.8:
+                    return True
+
         return False
 
     def _merge_entities(self, cursor, entity_id_weak: int, entity_id_strong: int) -> None:
